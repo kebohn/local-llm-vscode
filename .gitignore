@@ -1,0 +1,24 @@
+# Environment and secrets
+.env
+.env.local
+
+# Python
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs and temp
+*.log
+tmp/
+
+# Local models and runtime data
+models/
+ollama-data/
