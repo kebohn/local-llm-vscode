@@ -15,6 +15,7 @@ Install Continue from VS Code marketplace:
 
 - Fast Profile - Qwen2.5 Coder 7B
 - Strong Profile - Llama 3.1 8B
+- Router Profile - Local Auto (LiteLLM)
 
 Pull both models before use:
 
@@ -24,6 +25,31 @@ Pull both models before use:
 ```
 
 Use the fast profile for autocomplete and quick edits. Use the strong profile for harder planning and refactoring tasks.
+
+To use router profile:
+
+1. Start router mode with `./scripts/start-router.sh`
+2. Validate with `./scripts/router-health.sh`
+3. In Continue, choose Router Profile - Local Auto (LiteLLM)
+
+Router endpoint defaults:
+
+- API base: `http://localhost:4000/v1`
+- API key: `local-router-key` (set by `.env`)
+
+Before using router profile, pull both local models:
+
+```bash
+./scripts/pull-model.sh qwen2.5-coder:7b-instruct-q4_K_M
+./scripts/pull-model.sh llama3.1:8b-instruct-q4_K_M
+```
+
+For model quality/speed comparison, run:
+
+```bash
+./scripts/benchmark.sh
+./scripts/benchmark.sh llama3.1:8b-instruct-q4_K_M 3
+```
 
 ## Minimal config snippet
 

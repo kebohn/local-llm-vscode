@@ -11,6 +11,13 @@
       "provider": "ollama",
       "model": "llama3.1:8b-instruct-q4_K_M",
       "apiBase": "http://localhost:11434"
+    },
+    {
+      "title": "Router Profile - Local Auto (LiteLLM)",
+      "provider": "openai",
+      "model": "local-auto",
+      "apiBase": "http://localhost:4000/v1",
+      "apiKey": "local-router-key"
     }
   ],
   "tabAutocompleteModel": {

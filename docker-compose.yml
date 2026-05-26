@@ -7,8 +7,25 @@ services:
       - "${OLLAMA_PORT:-11434}:11434"
     environment:
       - OLLAMA_KEEP_ALIVE=${OLLAMA_KEEP_ALIVE:-10m}
+      - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL:-1}
+      - OLLAMA_MAX_LOADED_MODELS=${OLLAMA_MAX_LOADED_MODELS:-1}
     volumes:
       - ollama-data:/root/.ollama
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: local-llm-router
+    profiles: ["router"]
+    restart: unless-stopped
+    depends_on:
+      - ollama
+    ports:
+      - "${LITELLM_PORT:-4000}:4000"
+    environment:
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-local-router-key}
+    command: ["--config", "/app/config.yaml", "--port", "4000", "--host", "0.0.0.0"]
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml:ro
 
 volumes:
   ollama-data:

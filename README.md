@@ -13,7 +13,9 @@ This repository gives you a Copilot-like workflow in VS Code with local models b
 - Local model runtime in Docker.
 - CPU-friendly default model configuration.
 - Two Continue model profiles out of the box: fast and strong.
+- Optional OpenAI-compatible local router (LiteLLM) for multi-model routing.
 - One-command scripts for setup, start, stop, pull-model, and health checks.
+- Built-in benchmark script for latency and tokens/sec measurements.
 - Continue configuration template for VS Code.
 - Troubleshooting and architecture docs.
 
@@ -62,6 +64,10 @@ More details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - `scripts/stop.sh`: stop Ollama service.
 - `scripts/pull-model.sh`: download model into persistent volume.
 - `scripts/health.sh`: endpoint + generation validation.
+- `scripts/start-router.sh`: start Ollama plus LiteLLM router profile.
+- `scripts/router-health.sh`: validate router endpoint and advertised models.
+- `scripts/benchmark.sh`: benchmark latency and tokens/second.
+- `litellm/config.yaml`: local router model map (fast, strong, auto).
 - `.continue/config.json`: Continue model template.
 - `docs/continue-config.md`: Continue setup guide.
 - `docs/TROUBLESHOOTING.md`: common issues and fixes.
@@ -75,6 +81,35 @@ chmod +x scripts/*.sh
 ./scripts/start.sh
 ./scripts/pull-model.sh
 ./scripts/health.sh
+```
+
+## Automation with Make
+
+This repository now includes a Makefile to automate script order.
+
+Show all targets:
+
+```bash
+make help
+```
+
+One-command bootstrap (setup -> start -> pull default model -> health):
+
+```bash
+make bootstrap
+```
+
+Router bootstrap (start router -> pull fast and strong models -> router health):
+
+```bash
+make router-bootstrap
+```
+
+Benchmark examples:
+
+```bash
+make benchmark
+make benchmark MODEL=llama3.1:8b-instruct-q4_K_M RUNS=3
 ```
 
 Expected first run:
@@ -151,6 +186,17 @@ The template at `.continue/config.json` includes:
 - Fast Profile - Qwen2.5 Coder 7B: lower latency, best for autocomplete and short edits.
 - Strong Profile - Llama 3.1 8B: better reasoning quality, better for complex refactors and architecture prompts.
 
+Optional router profile is also included:
+
+- Router Profile - Local Auto (LiteLLM): OpenAI-compatible endpoint that can route across local models.
+
+To use the router profile:
+
+```bash
+./scripts/start-router.sh
+./scripts/router-health.sh
+```
+
 ## Model recommendations (CPU-first)
 
 - Default: `qwen2.5-coder:7b-instruct-q4_K_M`
@@ -183,6 +229,25 @@ Check health:
 ./scripts/health.sh
 ```
 
+Start with router enabled:
+
+```bash
+./scripts/start-router.sh
+```
+
+Check router health:
+
+```bash
+./scripts/router-health.sh
+```
+
+Benchmark model performance:
+
+```bash
+./scripts/benchmark.sh
+./scripts/benchmark.sh llama3.1:8b-instruct-q4_K_M 3
+```
+
 List models inside container:
 
 ```bash
@@ -210,7 +275,40 @@ docker compose logs -f ollama
 
 - All inference runs locally on your machine.
 - Do not expose Ollama port publicly without additional controls.
+- If you enable router mode, change `LITELLM_MASTER_KEY` before exposing it beyond localhost.
 - Review prompts and local code policy before sharing outputs.
+
+## CPU performance presets
+
+Edit `.env` and restart the stack after changes.
+
+Conservative (most stable on smaller CPUs):
+
+```dotenv
+OLLAMA_NUM_PARALLEL=1
+OLLAMA_MAX_LOADED_MODELS=1
+```
+
+Balanced (default):
+
+```dotenv
+OLLAMA_NUM_PARALLEL=1
+OLLAMA_MAX_LOADED_MODELS=1
+```
+
+Throughput-focused (more memory pressure):
+
+```dotenv
+OLLAMA_NUM_PARALLEL=2
+OLLAMA_MAX_LOADED_MODELS=2
+```
+
+Apply changes:
+
+```bash
+./scripts/stop.sh
+./scripts/start.sh
+```
 
 ## Cleanup
 
